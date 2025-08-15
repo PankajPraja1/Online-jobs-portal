@@ -1,0 +1,38 @@
+version: "3.8"
+services:
+  db:
+    image: postgres:15
+    environment:
+      POSTGRES_DB: jobsdb
+      POSTGRES_USER: jobsuser
+      POSTGRES_PASSWORD: jobspass
+    volumes:
+      - pgdata:/var/lib/postgresql/data
+  backend:
+    build: ./backend
+    env_file: .env
+    environment:
+      POSTGRES_DB: jobsdb
+      POSTGRES_USER: jobsuser
+      POSTGRES_PASSWORD: jobspass
+      POSTGRES_HOST: db
+      DJANGO_DEBUG: "1"
+      DJANGO_SECRET_KEY: "replace-me"
+    depends_on:
+      - db
+    ports:
+      - "8000:8000"
+    volumes:
+      - ./backend:/app
+      - ./backend/media:/app/media
+  frontend:
+    build: ./frontend
+    environment:
+      - REACT_APP_API_URL=http://localhost:8000/api/
+    ports:
+      - "3000:3000"
+    depends_on:
+      - backend
+
+volumes:
+  pgdata:
